@@ -351,29 +351,6 @@ class TorrentUI(threading.Thread):
             
         torrent_list.SetItems(list_items)
         
-        # # Convert to python list for sorting 
-#         py_list = []        
-#         for item in items:
-#             py_list.append(item)    
-#         print "Keys %s" % map(operator.itemgetter(0), py_list)
-# 
-#         # Convert back to mc.ListItems for building the list
-#         list_items = mc.ListItems()        
-#         for item in py_list:
-#             list_items.append(item)
-#         
-#         items = list_items
-#         
-#         
-#         # Set order
-#         # if self.order != self.last_order:
-# #             if order == "alphabetical":
-# #                 torrents = 
-# #                 self.refresh_list = True
-# #             
-# #         self.last_order = order
-    
-        
 
 class TransmissionUI(TorrentUI):
          
@@ -525,39 +502,40 @@ def create_connection(url=False, stored_url=False):
     
     print "Connecting with url: %s" % url
     
-    # Transmission
-    mc.ShowDialogNotification("Trying to connect to Transmission")
-    try:
-        if url:
-            connection = TransmissionClient(rpcUrl=url)
-        else:
-            connection = TransmissionClient()
-        klass = TransmissionUI
-        name = "Transmission"
-        connected = True
-    except Exception, e:
-        print "Transmission connection failed: %s" % e
-        pass
-        
-    # rTorrent
-    # mc.ShowDialogNotification("Trying to connect to rTorrent")
-#     try:
-#         if url:
-#             connection = RTorrentXMLRPCClient('scgi://%s' % url.strip('http://'))
-#         else:
-#             connection = RTorrentXMLRPCClient('scgi://127.0.0.1:5000')
-#             
-#         klass = rTorrentUI
-#         name = "rTorrent"
-#         connected = True
-#     except Exception, e:
-#         print "rTorrent connection failed: %s" % e
-#         pass
+    TORRENT_CLIENTS = [{
+        'name': 'Transmission',
+        'ui_klass': TransmissionUI,
+        'connection_klass': 'TransmissionClient(rpcUrl=\'{{url}}\')'
+        'default_url': 'http://localhost:9091'
+    },
+#     {
+#         'name': 'rTorrent',
+#         'ui_klass': rTorrentUI,
+#         'connection_klass': 'RTorrentXMLRPCClient(\'scgi://%s\' % \'{{url}}\'.strip(\'http://\'))'
+#         'default_url': 'scgi://127.0.0.1:5000'
+#     }
+    ]
     
+    for client in TORRENT_CLIENTS:
+        mc.ShowDialogNotification("Trying to connect to %s" % client['name'])
+        # build connection command
+        try:
+            if url:
+                connection = eval(client['connection_klass'].replace('{{url}}', url))
+            else:
+                connection = eval(client['connection_klass'].replace('{{url}}', client['default_url']))
+            connected = client
+        except:
+            connected = False
+            print "%s connection failed: %s" % (client['name'], e)
+            pass
+        if connected:
+            break
+
     # Made a connection, continue...
     if connected:
         window.GetLabel(105).SetLabel("Loading torrents...")
-        connection = klass(connection)
+        connection = connected['ui_klass'](connection)
         connection.start()
         print "Made a connection, starting UI"
         return connection

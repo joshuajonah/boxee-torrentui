@@ -1,0 +1,14 @@
+<app>
+  <id>torrentui</id>
+  <name>Torrent Downloads</name>
+  <version>0.2</version>
+  <description>Boxee UI for torrent downloads</description>
+  <thumb>http://joshuajonah.com/torrentsicon.png</thumb>
+  <media>video</media>
+  <copyright>joshuajonah</copyright>
+  <email>josh@joshuajonah.com</email>
+  <type>skin</type>
+  <startWindow>14002</startWindow>
+  <platform>mac,linux</platform>
+  <minversion>0.9.12</minversion>
+</app>

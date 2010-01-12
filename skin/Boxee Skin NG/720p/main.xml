@@ -1,0 +1,312 @@
+<?xml version="1.0"?>
+<window type="window" id="14002">
+    <defaultcontrol always="true">100</defaultcontrol>
+    <onload lang="python"><![CDATA[ 
+from torrent_ui import create_connection, window, torrent_list, connection
+listitem = False
+]]></onload>
+    <allowoverlay>no</allowoverlay>
+    <controls>
+        <include>Common_Background</include>
+        <include>Common_Status</include>
+        <control type="image" id="2000">
+            <posx>780</posx>
+            <posy>65</posy>
+            <width>30</width>
+            <height>30</height>
+            <visible>false</visible>
+            <texture>down_arrow.png</texture>
+        </control>
+        <control type="label" id="2001">
+            <posx>820</posx>
+            <posy>50</posy>
+            <width>205</width>
+            <height>40</height>
+            <font>font36b</font>
+            <align>left</align>
+            <label></label>
+            <textcolor>grey</textcolor>
+        </control>
+        <control type="image" id="2002">
+            <posx>1037</posx>
+            <posy>65</posy>
+            <width>30</width>
+            <height>30</height>
+            <visible>false</visible>
+            <texture>up_arrow.png</texture>
+        </control>
+        <control type="label" id="2003">
+            <posx>1080</posx>
+            <posy>50</posy>
+            <width>205</width>
+            <height>40</height>
+            <font>font36b</font>
+            <label></label>
+            <textcolor>grey</textcolor>
+        </control>
+        <control type="group" id="9000">
+            <control type="label">
+				<include>BrowseMainTitle</include>
+				<label>TORRENTS</label>
+			</control>
+			<control type="label" id="101">
+                <posx>400</posx>
+                <posy>50</posy>
+                <width>1280</width>
+                <height>40</height>
+                <font>font36b</font>
+                <label></label>
+                <textcolor>white</textcolor>
+            </control>
+            <control type="label" id="105">
+                <posx>0</posx>
+                <posy>170</posy>
+                <width>1280</width>
+                <height>520</height>
+                <font>font36b</font>
+                <align>center</align>
+                <aligny>center</aligny>
+                <label>Searching for torrent client...</label>
+                <textcolor>white</textcolor>
+            </control>
+            <control type="panel" id="100">
+                <description>Torrents</description>
+                <posx>59</posx>
+                <posy>110</posy>
+                <width>1280</width>
+                <height>610</height>
+                <onleft>-</onleft>
+                <onright>-</onright>
+                <onup>-</onup>
+                <ondown>-</ondown>
+                <scrolltime>200</scrolltime>
+                <pagecontrol>-</pagecontrol>
+                <orientation>vertical</orientation>
+                <itemlayout width="1162" height="145">
+                    <control type="image">
+                        <posy>10</posy>
+                        <width>1162</width>
+                        <height>135</height>
+                        <texture>item_bg.png</texture>
+                    </control>
+                    <control type="label">
+                        <posx>20</posx>
+                        <posy>10</posy>
+                        <width>1155</width>
+                        <height>140</height>
+                        <font>font28b</font>
+                        <align>left</align>
+                        <label>$INFO[ListItem.Label]</label>
+                        <textcolor>grey</textcolor>
+                    </control>
+                    <control type="label">
+                        <posx>20</posx>
+                        <posy>45</posy>
+                        <width>1155</width>
+                        <height>140</height>
+                        <font>font23</font>
+                        <align>left</align>
+                        <wrapmultiline>true</wrapmultiline>
+                        <label>$INFO[ListItem.property(description)]</label>
+                        <textcolor>grey</textcolor>
+                    </control>
+                    <control type="image">
+                        <posx>20</posx>
+                        <posy>85</posy>
+                        <width>1122</width>
+                        <height>24</height>
+                        <texture>$INFO[ListItem.property(custom:progress_bar)].png</texture>
+                    </control>
+                    <control type="label">
+                        <posx>20</posx>
+                        <posy>105</posy>
+                        <width>1155</width>
+                        <height>140</height>
+                        <font>font23</font>
+                        <align>left</align>
+                        <wrapmultiline>true</wrapmultiline>
+                        <label>$INFO[ListItem.TagLine]</label>
+                        <textcolor>grey</textcolor>
+                    </control>
+                </itemlayout>
+                <focusedlayout width="1162" height="145">
+                    <control type="image">
+                        <posy>10</posy>
+                        <width>1162</width>
+                        <height>135</height>
+                        <texture>active_item_bg.png</texture>
+                    </control>
+                    <control type="label">
+                        <posx>20</posx>
+                        <posy>10</posy>
+                        <width>1155</width>
+                        <height>140</height>
+                        <font>font28b</font>
+                        <align>left</align>
+                        <scroll>true</scroll>
+                        <scrollspeed>30</scrollspeed>
+                        <label>$INFO[ListItem.Label]</label>
+                        <textcolor>white</textcolor>
+                    </control>
+                    <control type="label">
+                        <posx>20</posx>
+                        <posy>45</posy>
+                        <width>1155</width>
+                        <height>140</height>
+                        <font>font23</font>
+                        <align>left</align>
+                        <wrapmultiline>true</wrapmultiline>
+                        <label>$INFO[ListItem.property(description)]</label>
+                        <textcolor>white</textcolor>
+                    </control>
+                    <control type="image">
+                        <posx>20</posx>
+                        <posy>85</posy>
+                        <width>1122</width>
+                        <height>24</height>
+                        <texture>$INFO[ListItem.property(custom:progress_bar)].png</texture>
+                    </control>
+                    <control type="label">
+                        <posx>20</posx>
+                        <posy>105</posy>
+                        <width>1155</width>
+                        <height>140</height>
+                        <font>font23</font>
+                        <align>left</align>
+                        <wrapmultiline>true</wrapmultiline>
+                        <label>$INFO[ListItem.TagLine]</label>
+                        <textcolor>white</textcolor>
+                    </control>
+                </focusedlayout>
+                <content type="url">
+                    <onclick lang="python"><![CDATA[
+window.PushState()
+listitem = torrent_list.GetItem(torrent_list.GetFocusedItem())
+if listitem.GetProperty("transfer_status") == 'Paused':
+    option = 4001
+elif listitem.GetProperty("transfer_status") in ['Downloading', 'Seeding']:
+    option = 4002
+window.GetControl(option).SetVisible(True)
+window.GetControl(option).SetFocus()
+window.GetControl(4000).SetVisible(True)
+]]></onclick>
+                </content>
+            </control>
+            <control type="image">
+                <posx>0</posx>
+                <posy>578</posy>
+                <width>1280</width>
+                <height>142</height>
+                <texture>home_bottom_feather.png</texture>
+            </control>
+            <control type="group" id="4000">
+                <visible>false</visible>
+                <control type="image">
+                    <width>1280</width>
+                    <height>720</height>
+                    <texture>black.png</texture>
+                    <animation effect="fade" start="40" end="40" time="0" condition="true">Conditional</animation>
+                </control>
+                <control type="image">
+                    <posx>304</posx>
+                    <posy>260</posy>
+                    <width>672</width>
+                    <height>205</height>
+                    <texture>torrent_option_box.png</texture>
+                </control>
+                <control type="group" id="4001">
+                    <visible>false</visible>
+                    <posx>380</posx>
+                    <posy>325</posy>
+                    <control type="button" id="4003">
+                        <posx>0</posx>
+                        <posy>0</posy>
+                        <width>188</width>
+                        <height>70</height>
+                        <texturefocus>start_over.png</texturefocus>
+                        <texturenofocus>start.png</texturenofocus>
+                        <onfocus>-</onfocus>
+                        <onup>-</onup>
+                        <ondown>-</ondown>
+                        <onleft>4004</onleft>
+                        <onright>4004</onright>
+                        <onclick lang="python"><![CDATA[
+pk = torrent_list.GetFocusedItem()
+window.PopState()
+torrent_list.SetFocusedItem(pk)
+listitem = torrent_list.GetItem(pk)
+connection.start_torrent(listitem.GetProperty('id'))
+]]></onclick>
+                    </control>
+                    <control type="button" id="4004">
+                        <posx>265</posx>
+                        <posy>0</posy>
+                        <width>241</width>
+                        <height>75</height>
+                        <texturefocus>delete_over.png</texturefocus>
+                        <texturenofocus>delete.png</texturenofocus>
+                        <onfocus>-</onfocus>
+                        <onup>-</onup>
+                        <ondown>-</ondown>
+                        <onleft>4003</onleft>
+                        <onright>4003</onright>
+                        <onclick lang="python"><![CDATA[
+pk = torrent_list.GetFocusedItem()
+window.PopState()
+torrent_list.SetFocusedItem(pk)
+listitem = torrent_list.GetItem(pk)
+connection.delete_torrent(listitem.GetProperty('id'))
+
+]]></onclick>
+                    </control>
+                </control>
+                <control type="group" id="4002">
+                    <visible>false</visible>
+                    <posx>380</posx>
+                    <posy>325</posy>
+                    <control type="button" id="4005">
+                        <posx>0</posx>
+                        <posy>0</posy>
+                        <width>220</width>
+                        <height>76</height>
+                        <texturefocus>pause_over.png</texturefocus>
+                        <texturenofocus>pause.png</texturenofocus>
+                        <onfocus>-</onfocus>
+                        <onup>-</onup>
+                        <ondown>-</ondown>
+                        <onleft>4006</onleft>
+                        <onright>4006</onright>
+                        <onclick lang="python"><![CDATA[
+pk = torrent_list.GetFocusedItem()
+window.PopState()
+torrent_list.SetFocusedItem(pk)
+listitem = torrent_list.GetItem(pk)
+connection.stop_torrent(listitem.GetProperty('id'))
+
+]]></onclick>
+                    </control>
+                    <control type="button" id="4006">
+                        <posx>265</posx>
+                        <posy>0</posy>
+                        <width>241</width>
+                        <height>75</height>
+                        <texturefocus>delete_over.png</texturefocus>
+                        <texturenofocus>delete.png</texturenofocus>
+                        <onfocus>-</onfocus>
+                        <onup>-</onup>
+                        <ondown>-</ondown>
+                        <onleft>4005</onleft>
+                        <onright>4005</onright>
+                        <onclick lang="python"><![CDATA[
+pk = torrent_list.GetFocusedItem()
+window.PopState()
+torrent_list.SetFocusedItem(pk)
+listitem = torrent_list.GetItem(pk)
+connection.delete_torrent(listitem.GetProperty('id'))
+]]></onclick>
+                    </control>
+                </control>
+            </control>
+        </control>
+    </controls>
+</window>

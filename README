@@ -1,0 +1,1 @@
+This is a pluggable torrent UI for Boxee. It is a single interface destined to be able to include multiple torrent client backends for cross platform compatibility.

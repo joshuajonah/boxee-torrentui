@@ -1,7 +1,7 @@
 <app>
   <id>torrentui</id>
   <name>Torrent Downloads</name>
-  <version>0.2</version>
+  <version>0.8</version>
   <description>Boxee UI for torrent downloads</description>
   <thumb>http://joshuajonah.com/torrentsicon.png</thumb>
   <media>video</media>

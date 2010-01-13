@@ -2,47 +2,78 @@
 <window type="window" id="14002">
     <defaultcontrol always="true">100</defaultcontrol>
     <onload lang="python"><![CDATA[ 
-from torrent_ui import create_connection, window, torrent_list, connection
-listitem = False
+from connect import mc, create_connection, APP, CONFIG, WINDOW, TORRENT_CLIENTS, TORRENT_LIST
+
+STATUS = WINDOW.GetLabel(105)
+
+STATUS.SetLabel("Checking for saved connections...")
+
+params = mc.Parameters()
+params['client_name'] = CONFIG.GetValue('client_name')
+params['client_address'] = CONFIG.GetValue('client_address')
+params['client_user'] = CONFIG.GetValue('client_user')
+params['client_pass'] = CONFIG.GetValue('client_pass')
+
+client = params['client_name']
+print "OnLoad connection to %s with url %s" % (params['client_name'], params['client_address']) 
+if client:
+    STATUS.SetLabel("Connecting to %s" % client)
+    client = TORRENT_CLIENTS[params['client_name']]
+    connection = create_connection(client, url=params['client_address'], 
+                                            username=params['client_user'], 
+                                            password=params['client_pass'])
+    if not connection:
+        STATUS.SetLabel("Connection failed, launching configuration...")
+        WINDOW.PushState()
+        APP.ActivateWindow(14003, params)
+else:
+    STATUS.SetLabel("None found, launching configuration...")
+    WINDOW.PushState()
+    APP.ActivateWindow(14003, params)
 ]]></onload>
     <allowoverlay>no</allowoverlay>
     <controls>
         <include>Common_Background</include>
+        <include>Bottom_Feather</include>
         <include>Common_Status</include>
-        <control type="image" id="2000">
+        <control type="group" id="2000">
             <posx>780</posx>
             <posy>65</posy>
-            <width>30</width>
-            <height>30</height>
             <visible>false</visible>
-            <texture>down_arrow.png</texture>
-        </control>
-        <control type="label" id="2001">
-            <posx>820</posx>
-            <posy>50</posy>
-            <width>205</width>
-            <height>40</height>
-            <font>font36b</font>
-            <align>left</align>
-            <label></label>
-            <textcolor>grey</textcolor>
-        </control>
-        <control type="image" id="2002">
-            <posx>1037</posx>
-            <posy>65</posy>
-            <width>30</width>
-            <height>30</height>
-            <visible>false</visible>
-            <texture>up_arrow.png</texture>
-        </control>
-        <control type="label" id="2003">
-            <posx>1080</posx>
-            <posy>50</posy>
-            <width>205</width>
-            <height>40</height>
-            <font>font36b</font>
-            <label></label>
-            <textcolor>grey</textcolor>
+            <control type="image">
+                <posx>0</posx>
+                <posy>15</posy>
+                <width>30</width>
+                <height>30</height>
+                <texture>down_arrow.png</texture>
+            </control>
+            <control type="label" id="2001">
+                <posx>40</posx>
+                <posy>0</posy>
+                <width>205</width>
+                <height>40</height>
+                <font>font36b</font>
+                <align>left</align>
+                <label></label>
+                <textcolor>grey</textcolor>
+            </control>
+            <control type="image">
+                <posx>257</posx>
+                <posy>15</posy>
+                <width>30</width>
+                <height>30</height>
+                <texture>up_arrow.png</texture>
+            </control>
+            <control type="label" id="2002">
+                <posx>300</posx>
+                <posy>0</posy>
+                <width>205</width>
+                <height>40</height>
+                <font>font36b</font>
+                <align>left</align>
+                <label></label>
+                <textcolor>grey</textcolor>
+            </control>
         </control>
         <control type="group" id="9000">
             <control type="label">
@@ -60,13 +91,12 @@ listitem = False
             </control>
             <control type="label" id="105">
                 <posx>0</posx>
-                <posy>170</posy>
+                <posy>370</posy>
                 <width>1280</width>
-                <height>520</height>
+                <height>40</height>
                 <font>font36b</font>
                 <align>center</align>
-                <aligny>center</aligny>
-                <label>Searching for torrent client...</label>
+                <label>Loading app...</label>
                 <textcolor>white</textcolor>
             </control>
             <control type="panel" id="100">
@@ -92,7 +122,7 @@ listitem = False
                     <control type="label">
                         <posx>20</posx>
                         <posy>10</posy>
-                        <width>1155</width>
+                        <width>1125</width>
                         <height>140</height>
                         <font>font28b</font>
                         <align>left</align>
@@ -139,7 +169,7 @@ listitem = False
                     <control type="label">
                         <posx>20</posx>
                         <posy>10</posy>
-                        <width>1155</width>
+                        <width>1125</width>
                         <height>140</height>
                         <font>font28b</font>
                         <align>left</align>
@@ -180,24 +210,17 @@ listitem = False
                 </focusedlayout>
                 <content type="url">
                     <onclick lang="python"><![CDATA[
-window.PushState()
-listitem = torrent_list.GetItem(torrent_list.GetFocusedItem())
+WINDOW.PushState()
+listitem = TORRENT_LIST.GetItem(TORRENT_LIST.GetFocusedItem())
 if listitem.GetProperty("transfer_status") == 'Paused':
     option = 4001
 elif listitem.GetProperty("transfer_status") in ['Downloading', 'Seeding']:
     option = 4002
-window.GetControl(option).SetVisible(True)
-window.GetControl(option).SetFocus()
-window.GetControl(4000).SetVisible(True)
+WINDOW.GetControl(option).SetVisible(True)
+WINDOW.GetControl(option).SetFocus()
+WINDOW.GetControl(4000).SetVisible(True)
 ]]></onclick>
                 </content>
-            </control>
-            <control type="image">
-                <posx>0</posx>
-                <posy>578</posy>
-                <width>1280</width>
-                <height>142</height>
-                <texture>home_bottom_feather.png</texture>
             </control>
             <control type="group" id="4000">
                 <visible>false</visible>
@@ -231,10 +254,10 @@ window.GetControl(4000).SetVisible(True)
                         <onleft>4004</onleft>
                         <onright>4004</onright>
                         <onclick lang="python"><![CDATA[
-pk = torrent_list.GetFocusedItem()
-window.PopState()
-torrent_list.SetFocusedItem(pk)
-listitem = torrent_list.GetItem(pk)
+pk = TORRENT_LIST.GetFocusedItem()
+WINDOW.PopState()
+TORRENT_LIST.SetFocusedItem(pk)
+listitem = TORRENT_LIST.GetItem(pk)
 connection.start_torrent(listitem.GetProperty('id'))
 ]]></onclick>
                     </control>
@@ -251,10 +274,10 @@ connection.start_torrent(listitem.GetProperty('id'))
                         <onleft>4003</onleft>
                         <onright>4003</onright>
                         <onclick lang="python"><![CDATA[
-pk = torrent_list.GetFocusedItem()
-window.PopState()
-torrent_list.SetFocusedItem(pk)
-listitem = torrent_list.GetItem(pk)
+pk = TORRENT_LIST.GetFocusedItem()
+WINDOW.PopState()
+TORRENT_LIST.SetFocusedItem(pk)
+listitem = TORRENT_LIST.GetItem(pk)
 connection.delete_torrent(listitem.GetProperty('id'))
 
 ]]></onclick>
@@ -277,10 +300,10 @@ connection.delete_torrent(listitem.GetProperty('id'))
                         <onleft>4006</onleft>
                         <onright>4006</onright>
                         <onclick lang="python"><![CDATA[
-pk = torrent_list.GetFocusedItem()
-window.PopState()
-torrent_list.SetFocusedItem(pk)
-listitem = torrent_list.GetItem(pk)
+pk = TORRENT_LIST.GetFocusedItem()
+WINDOW.PopState()
+TORRENT_LIST.SetFocusedItem(pk)
+listitem = TORRENT_LIST.GetItem(pk)
 connection.stop_torrent(listitem.GetProperty('id'))
 
 ]]></onclick>
@@ -298,15 +321,18 @@ connection.stop_torrent(listitem.GetProperty('id'))
                         <onleft>4005</onleft>
                         <onright>4005</onright>
                         <onclick lang="python"><![CDATA[
-pk = torrent_list.GetFocusedItem()
-window.PopState()
-torrent_list.SetFocusedItem(pk)
-listitem = torrent_list.GetItem(pk)
+pk = TORRENT_LIST.GetFocusedItem()
+WINDOW.PopState()
+TORRENT_LIST.SetFocusedItem(pk)
+listitem = TORRENT_LIST.GetItem(pk)
 connection.delete_torrent(listitem.GetProperty('id'))
 ]]></onclick>
                     </control>
                 </control>
             </control>
+        </control>
+        <control type="multiimage" id="3000"> 
+            <include>Loading_Animation</include>
         </control>
     </controls>
 </window>

@@ -1,13 +1,11 @@
 import time, threading, operator
 import mc
-from transmission_client import TransmissionClient, TransmissionClientFailure
-from rtorrent_client import RTorrentXMLRPCClient
 
 
-config = mc.GetApp().GetLocalConfig()
-window = mc.GetWindow(14002)
-torrent_list = window.GetList(100)
-
+CONFIG = mc.GetApp().GetLocalConfig()
+WINDOW = mc.GetWindow(14002)
+TORRENT_LIST = WINDOW.GetList(100)
+STATUS = WINDOW.GetLabel(105)
 
 class TorrentUI(threading.Thread):
     '''
@@ -18,9 +16,8 @@ class TorrentUI(threading.Thread):
         connection: A connection object, usually created when checking connectivity of
         a torrent client
     '''
-    
     order = "alphabetical"
-    stored_order = config.GetValue('order')
+    stored_order = CONFIG.GetValue('order')
     if stored_order:
         order = stored_order
     
@@ -28,11 +25,9 @@ class TorrentUI(threading.Thread):
     def __init__(self, connection):
         super(TorrentUI, self).__init__()
         self.connection = connection
-        self._stop = threading.Event()
         
 
     def run(self):
-        self.window = window
         self.refresh_list = False
         
         # Start updating the torrent list.
@@ -233,22 +228,20 @@ class TorrentUI(threading.Thread):
                 items.append(item)
                 # Update the global status items.
             status = self.get_status()
-            window.GetControl(2000).SetVisible(True)
-            window.GetLabel(2001).SetLabel(str(status['global_download']))
-            window.GetControl(2002).SetVisible(True)
-            window.GetLabel(2003).SetLabel(str(status['global_upload']))  
-            self.window.GetControl(105).SetVisible(False)
-            
+            try:
+                WINDOW.GetControl(2000).SetVisible(True)
+                WINDOW.GetLabel(2001).SetLabel(status['global_download'])
+                WINDOW.GetLabel(2002).SetLabel(status['global_upload'])
+            except:
+                raise Exception("Killing the TorrentUI thread.")
         else:
             # Wait for 2 seconds, this will later be switched to a var that
             # can be changed by the user.
-            time.sleep(2.0)
-            
-            self.window.GetControl(105).SetVisible(False)
+            time.sleep(5.0)
             
             # List of current items.
             try:
-                current_items = torrent_list.GetItems()
+                current_items = TORRENT_LIST.GetItems()
             except:
                 return
             
@@ -279,13 +272,11 @@ class TorrentUI(threading.Thread):
             try:
                 # Update the global status items.
                 status = self.get_status()
-                window.GetControl(2000).SetVisible(True)
-                window.GetLabel(2001).SetLabel(str(status['global_download']))
-                window.GetControl(2002).SetVisible(True)
-                window.GetLabel(2003).SetLabel(str(status['global_upload']))  
+                WINDOW.GetControl(2000).SetVisible(True)
+                WINDOW.GetLabel(2001).SetLabel(status['global_download'])
+                WINDOW.GetLabel(2002).SetLabel(status['global_upload'])  
             except:
-                print "Killing the TorrentUI thread."
-                self._stop.set()
+                raise Exception("Killing the TorrentUI thread.")
                 
             new_ids = []
             for current_id in current_ids.keys():
@@ -293,7 +284,7 @@ class TorrentUI(threading.Thread):
                     new_ids.append(current_id)
                     
             for new_id in new_ids:
-                new_items.append(torrent_list.GetItem(current_ids[new_id]))
+                new_items.append(TORRENT_LIST.GetItem(current_ids[new_id]))
     
             items = current_items
             if len(new_items) != len(current_items):
@@ -305,17 +296,19 @@ class TorrentUI(threading.Thread):
         if self.refresh_list:
             # Try to get the currently selected item.
             try:
-                selected = torrent_list.GetFocusedItem()
+                selected = TORRENT_LIST.GetFocusedItem()
             except:
                 pass
             # Set the new list values.
-            torrent_list.SetItems(items)
+            TORRENT_LIST.SetItems(items)
             # Try to restore the previously selected item.
             try:
-                torrent_list.SetFocusedItem(selected)
+                TORRENT_LIST.SetFocusedItem(selected)
             except:
                 pass
                 
+        STATUS.SetVisible(False)
+        WINDOW.GetControl(3000).SetVisible(False)
         # Do it all again.
         self.update_list()
     
@@ -324,7 +317,7 @@ class TorrentUI(threading.Thread):
         items_dict = {}
         
         if sort_type == "alphabetical":
-            for item in torrent_list.GetItems():
+            for item in TORRENT_LIST.GetItems():
                 items_dict[item.GetLabel()] = item
             labels = items_dict.keys()
             labels.sort()
@@ -333,7 +326,7 @@ class TorrentUI(threading.Thread):
                 ordered_list.append(items_dict[label])
         elif sort_type == "status":
             down = []; seed = []; pause = []
-            for item in torrent_list.GetItems():
+            for item in TORRENT_LIST.GetItems():
                 if item.GetProperty('transfer_status') == 'Downloading':
                     down.append(item)
                 if item.GetProperty('transfer_status') == 'Seeding':
@@ -342,19 +335,20 @@ class TorrentUI(threading.Thread):
                     pause.append(item)
             ordered_list = down + seed + pause
         
-        window.GetLabel(104).SetLabel(sort_type.upper())
+        WINDOW.GetLabel(104).SetLabel(sort_type.upper())
         print ordered_list
         
         list_items = mc.ListItems()        
         for item in ordered_list:
             list_items.append(item)
             
-        torrent_list.SetItems(list_items)
+        TORRENT_LIST.SetItems(list_items)
         
 
 class TransmissionUI(TorrentUI):
-         
-    
+    '''
+    TorrentUI subclass for the Transmission torrent client.
+    '''
     def get_status(self):
         status = self.connection.sessionStats()['arguments']
         status = {
@@ -431,8 +425,9 @@ class TransmissionUI(TorrentUI):
         
         
 class rTorrentUI(TorrentUI):
-
-
+    '''
+    TorrentUI subclass for the Transmission torrent client.
+    '''
     def get_status(self):
         print "get_status Ran"
         print "Methods: %s" % status
@@ -453,8 +448,7 @@ class rTorrentUI(TorrentUI):
         for view in views:
             infohashes = conn.download_list(view)
             for infohash in infohashes:
-                print "up_total: %s" % conn.d.get_up_total(infohash)
-                
+                print "up_total: %s" % conn.d.get_up_total(infohash)     
              
                 if view == 'started':
                     status = 'Downloading'
@@ -491,78 +485,3 @@ class rTorrentUI(TorrentUI):
             
         return torrents
 
-    
-def create_connection(url=False, stored_url=False):
-    connection = False
-    connected = False
-    klass = False
-    
-    if stored_url:
-        url = stored_url
-    
-    print "Connecting with url: %s" % url
-    
-    TORRENT_CLIENTS = [{
-        'name': 'Transmission',
-        'ui_klass': TransmissionUI,
-        'connection_klass': 'TransmissionClient(rpcUrl=\'{{url}}\')'
-        'default_url': 'http://localhost:9091'
-    },
-#     {
-#         'name': 'rTorrent',
-#         'ui_klass': rTorrentUI,
-#         'connection_klass': 'RTorrentXMLRPCClient(\'scgi://%s\' % \'{{url}}\'.strip(\'http://\'))'
-#         'default_url': 'scgi://127.0.0.1:5000'
-#     }
-    ]
-    
-    for client in TORRENT_CLIENTS:
-        mc.ShowDialogNotification("Trying to connect to %s" % client['name'])
-        # build connection command
-        try:
-            if url:
-                connection = eval(client['connection_klass'].replace('{{url}}', url))
-            else:
-                connection = eval(client['connection_klass'].replace('{{url}}', client['default_url']))
-            connected = client
-        except:
-            connected = False
-            print "%s connection failed: %s" % (client['name'], e)
-            pass
-        if connected:
-            break
-
-    # Made a connection, continue...
-    if connected:
-        window.GetLabel(105).SetLabel("Loading torrents...")
-        connection = connected['ui_klass'](connection)
-        connection.start()
-        print "Made a connection, starting UI"
-        return connection
-    # Found and tried a stored url but it didn't work, try again without the url.
-    elif stored_url: 
-        print "Manual IP didn't work, trying factory ones."
-        config.SetValue('client_address', 'none')
-        return create_connection()
-    # Not a stored url and the factory ones didn't work, ask for a manual IP...
-    else:
-        if mc.ShowDialogConfirm("Is there a torrent app running?", "Would you like to supply a manual IP and port for the torrent client?", "Quit", "Manual IP"):
-            if config.GetValue('client_address'):
-                value = config.GetValue('client_address')
-            else:
-                value = 'e.g.: "http://localhost:9091"'
-            value = mc.ShowDialogKeyboard("Manual IP Entry", value, False)
-            if value != 'e.g.: "http://localhost:9091"':
-                config.SetValue('client_address', value)
-            create_connection(stored_url=value)
-        else:
-            mc.CloseWindow()
-        
-            
-url = config.GetValue('client_address')
-if url and url != 'none': 
-    print "Saved IP Retrieved: %s" % url
-    connection = create_connection(stored_url=url)
-else:
-    connection = create_connection()
-    

@@ -1,0 +1,279 @@
+<?xml version="1.0"?>
+<window id="14003">
+    <defaultcontrol always="true">9006</defaultcontrol>
+    <allowoverlay>no</allowoverlay>
+    <onload lang="python"><![CDATA[
+from connect import mc, create_connection, APP, CONFIG, WINDOW, TORRENT_CLIENTS
+PARENT_WINDOW = WINDOW
+WINDOW = mc.GetWindow(14003)
+params = APP.GetLaunchedWindowParameters()
+WINDOW.GetEdit(9001).SetText(params['client_address'])
+WINDOW.GetEdit(9002).SetText(params['client_user'])
+WINDOW.GetEdit(9003).SetText(params['client_pass'])
+WINDOW.GetControl(7000).SetVisible(True)
+WINDOW.GetControl(3000).SetVisible(False)
+]]></onload>
+    <controls>
+        <include>Common_Background</include>
+        <include>Bottom_Feather</include>
+        <include>Common_Status</include>
+        <control type="label"> 
+            <include>BrowseMainTitle</include>
+            <label>TORRENTS</label>
+        </control>
+        <control type="group" id="7000">
+            <visible>false</visible>
+            <include>Dialog_Popup_Animation</include>            
+            <posx>100</posx>
+            <posy>250</posy>
+            <width>1220</width>
+            <height>460</height>
+            <control type="image">
+                <posx>0</posx>
+                <posy>0</posy>
+                <width>1100</width>
+                <height>320</height>
+                <texture border="64">action_menu_bg.png</texture>
+            </control>
+            <control type="group">
+                <control type="label">
+                    <posx>40</posx>
+                    <posy>40</posy>
+                    <width>440</width>
+                    <height>100</height>
+                    <label>Setup TORRENTS for your torrent client.</label>
+                    <wrapmultiline>true</wrapmultiline>
+                    <font>font28b</font>
+                    <textcolor>white</textcolor>
+                </control>
+                <control type="label">
+                    <posx>40</posx>
+                    <posy>160</posy>
+                    <width>440</width>
+                    <height>100</height>
+                    <label>Or automatically scan for a running torrent client.</label>
+                    <wrapmultiline>true</wrapmultiline>
+                    <font>font24</font>
+                    <textcolor>white</textcolor>
+                </control>
+                <control type="button" id="9006">
+                    <enable>true</enable>
+                    <posx>16</posx>
+                    <posy>228</posy>
+                    <width>160</width>
+                    <height>54</height>
+                    <align>center</align>
+                    <aligny>center</aligny>
+                    <textcolor>grey</textcolor>
+                    <focusedcolor>white</focusedcolor>
+                    <texturenofocus border="30">-</texturenofocus>
+                    <texturefocus border="30">button_action_menu_source_on.png</texturefocus>
+                    <textureclick border="30">button_action_menu_source_click.png</textureclick>
+                    <font>title22b</font>
+                    <label>AUTO SCAN</label>
+                    <!--OK-->
+                    <onup>9001</onup>
+                    <ondown>9001</ondown>
+                    <onleft>9005</onleft>
+                    <onright>9004</onright>
+                    <onclick lang="python"><![CDATA[
+WINDOW.GetControl(9007).SetVisible(True)
+for name, client in TORRENT_CLIENTS.items():
+    print "Name: %s Client: %s" % (name, client)
+    connection = create_connection(client)
+    if connection:
+        print "Created connection to %s successfully." % name
+        print "Set stored vars - 'client_name':'%s', 'client_address':'%s', 'client_user':'%s', , 'client_pass':'%s'" % (client['name'], client['default_url'], '', '')
+        CONFIG.SetValue('client_name', client['name'])
+        CONFIG.SetValue('client_address', client['default_url'])
+        CONFIG.SetValue('client_user', '')
+        CONFIG.SetValue('client_pass', '')
+        params['client_address'] = client['default_url']
+        params['client_user'] = ''
+        params['client_pass'] = ''
+        WINDOW.PopState()
+        mc.CloseWindow()
+        break
+WINDOW.GetControl(9007).SetVisible(False)
+if not connection:
+    mc.ShowDialogOk("Connection failed", "Could not connect to any torrent clients. Perhaps you require manual settings.")     
+]]></onclick>
+                </control>
+                <control type="multiimage" id="9007">
+                    <visible>false</visible>
+                    <posx>195</posx>
+                    <posy>245</posy> 
+                    <include>Loading_Animation</include>
+                </control>
+            </control>
+            <control type="group">
+                <posx>490</posx>
+                <posy>0</posy>
+                <control type="label">
+                    <posx>26</posx>
+                    <posy>40</posy>
+                    <width>550</width>
+                    <height>40</height>
+                    <label>$LOCALIZE[51894]:</label>
+                    <aligny>center</aligny>
+                    <font>title24</font>
+                    <textcolor>white</textcolor>
+                </control>
+                <control type="edit" id="9001">
+                    <enable>true</enable>
+                    <posx>220</posx>
+                    <posy>40</posy>
+                    <width>350</width>
+                    <height>40</height>
+                    <font>title22</font>
+                    <align>left</align>
+                    <aligny>center</aligny>
+                    <textcolor>white</textcolor>
+                    <focusedcolor>darkgrey</focusedcolor>
+                    <textoffsetx>14</textoffsetx>
+                    <texturenofocus border="20">text_box.png</texturenofocus>
+                    <texturefocus border="20">text_box_on.png</texturefocus>
+                    <textureclick border="20">text_box_click.png</textureclick>
+                    <onleft>9006</onleft>
+                    <onright>-</onright>
+                    <onup>9004</onup>
+                    <ondown>9004</ondown>
+                </control>
+                <control type="label">
+                    <posx>26</posx>
+                    <posy>100</posy>
+                    <width>550</width>
+                    <height>40</height>
+                    <label>$LOCALIZE[20142]:</label>
+                    <aligny>center</aligny>
+                    <font>title24</font>
+                    <textcolor>white</textcolor>
+                </control>
+                <control type="edit" id="9002">
+                    <enable>false</enable>
+                    <description>Username</description>
+                    <posx>220</posx>
+                    <posy>100</posy>
+                    <width>350</width>
+                    <height>40</height>
+                    <font>title22</font>
+                    <align>left</align>
+                    <aligny>center</aligny>
+                    <textcolor>white</textcolor>
+                    <focusedcolor>darkgrey</focusedcolor>
+                    <textoffsetx>14</textoffsetx>
+                    <texturenofocus border="20">text_box.png</texturenofocus>
+                    <texturefocus border="20">text_box_on.png</texturefocus>
+                    <textureclick border="20">text_box_click.png</textureclick>
+                    <onleft>9006</onleft>
+                    <onright>-</onright>
+                    <onup>9001</onup>
+                    <ondown>9003</ondown>
+                </control>
+                <control type="label">
+                    <posx>26</posx>
+                    <posy>160</posy>
+                    <width>550</width>
+                    <height>40</height>
+                    <label>$LOCALIZE[15052]:</label>
+                    <aligny>center</aligny>
+                    <font>title24</font>
+                    <textcolor>white</textcolor>
+                </control>
+                <control type="edit" id="9003">
+                    <enable>false</enable>
+                    <description>Password</description>
+                    <posx>220</posx>
+                    <posy>160</posy>
+                    <width>350</width>
+                    <height>40</height>
+                    <font>title22</font>
+                    <align>left</align>
+                    <aligny>center</aligny>
+                    <textcolor>white</textcolor>
+                    <focusedcolor>darkgrey</focusedcolor>
+                    <textoffsetx>14</textoffsetx>
+                    <texturenofocus border="20">text_box.png</texturenofocus>
+                    <texturefocus border="20">text_box_on.png</texturefocus>
+                    <textureclick border="20">text_box_click.png</textureclick>
+                    <onleft>9006</onleft>
+                    <onright>-</onright>
+                    <onup>9002</onup>
+                    <ondown>9004</ondown>
+                </control>
+                <control type="button" id="9004">
+                    <posx>16</posx>
+                    <posy>228</posy>
+                    <width>160</width>
+                    <height>54</height>
+                    <align>center</align>
+                    <aligny>center</aligny>
+                    <textcolor>grey</textcolor>
+                    <focusedcolor>white</focusedcolor>
+                    <texturenofocus border="30">-</texturenofocus>
+                    <texturefocus border="30">button_action_menu_source_on.png</texturefocus>
+                    <textureclick border="30">button_action_menu_source_click.png</textureclick>
+                    <font>title22b</font>
+                    <label>CONNECT</label>
+                    <onup>9001</onup>
+                    <ondown>-</ondown>
+                    <onleft>9006</onleft>
+                    <onright>9005</onright>
+                    <onclick lang="python"><![CDATA[
+WINDOW.GetControl(9008).SetVisible(True)
+address = WINDOW.GetEdit(9001).GetText()
+# user = WINDOW.GetEdit(9002).GetText()
+# pass = WINDOW.GetEdit(9003).GetText()
+for name, client in TORRENT_CLIENTS.items():
+    connection = create_connection(client, url=address)
+    if connection:
+        print "Created connection to %s successfully." % name
+        CONFIG.SetValue('client_name', name)
+        CONFIG.SetValue('client_address', address)
+        # CONFIG.SetValue('client_user', user)
+        # CONFIG.SetValue('client_pass', pass)
+        WINDOW.PopState()
+        mc.CloseWindow()
+        break
+WINDOW.GetControl(9008).SetVisible(False)      
+if not connection:
+    mc.ShowDialogOk("Connection failed", "Could not connect to any torrent clients with the provided information.")  
+]]></onclick>
+                </control>
+                <control type="button" id="9005">
+                    <posx>156</posx>
+                    <posy>228</posy>
+                    <width>160</width>
+                    <height>54</height>
+                    <align>center</align>
+                    <aligny>center</aligny>
+                    <textcolor>grey</textcolor>
+                    <focusedcolor>white</focusedcolor>
+                    <texturenofocus border="30">-</texturenofocus>
+                    <texturefocus border="30">button_action_menu_source_on.png</texturefocus>
+                    <textureclick border="30">button_action_menu_source_click.png</textureclick>
+                    <font>title22b</font>
+                    <label>QUIT</label>
+                    <onup>9001</onup>
+                    <ondown>-</ondown>
+                    <onleft>9004</onleft>
+                    <onright>9006</onright>
+                    <onclick lang="python"><![CDATA[
+PARENT_WINDOW.PopState()
+mc.CloseWindow()
+mc.CloseWindow()
+]]></onclick>
+                </control>
+                <control type="multiimage" id="9008">
+                    <visible>false</visible>
+                    <posx>320</posx>
+                    <posy>245</posy> 
+                    <include>Loading_Animation</include>
+                </control>
+            </control>
+        </control>
+        <control type="multiimage" id="3000"> 
+            <include>Loading_Animation</include>
+        </control>
+    </controls>
+</window>

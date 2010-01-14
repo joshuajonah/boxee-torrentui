@@ -7,6 +7,13 @@ WINDOW = mc.GetWindow(14002)
 TORRENT_LIST = WINDOW.GetList(100)
 STATUS = WINDOW.GetLabel(105)
 
+
+class TorrentConnectionError(Exception): pass
+
+
+class TorrentUIError(Exception): pass
+
+
 class TorrentUI(threading.Thread):
     '''
     Base class for torrent client object. Extend this class with the required methods
@@ -32,8 +39,8 @@ class TorrentUI(threading.Thread):
         
         # Start updating the torrent list.
         self.update_list(firstrun=True)
-        
-        
+
+    
     def get_status(self):
         '''
         Extend this to get status information. Mainly for getting global up/down speeds.
@@ -426,7 +433,7 @@ class TransmissionUI(TorrentUI):
         
 class rTorrentUI(TorrentUI):
     '''
-    TorrentUI subclass for the Transmission torrent client.
+    TorrentUI subclass for the rTorrent client.
     '''
     def get_status(self):
         print "get_status Ran"
@@ -484,4 +491,86 @@ class rTorrentUI(TorrentUI):
                 })
             
         return torrents
+
+
+class uTorrentUI(TorrentUI):
+    '''
+    TorrentUI subclass for the uTorrent client.
+    '''
+    def get_status(self):
+        print "uTorrent returned: %s" % self.connection.webui_get()
+        # status = self.connection.sessionStats()['arguments']
+#         status = {
+#             'global_download': '%s/s' % self.format_filesize(status['downloadSpeed']), 
+#             'global_upload': '%s/s' % self.format_filesize(status['uploadSpeed'])
+#         }
+#         return status
+        
+         
+    def get_torrents(self):
+        print self.connection
+        print "uTorrent returned: %s" % self.connection.webui_get()
+        feed_torrents = self.connection.torrentGet()['arguments']['torrents']
+        torrents = []
+        
+        for torrent_data in feed_torrents:
+        
+            total_bytes_completed = 0
+            for payload in torrent_data['files']:
+                total_bytes_completed += payload['bytesCompleted']
+        
+            if torrent_data['status'] == 4:
+                status = 'Downloading'
+            elif torrent_data['status'] == 8:
+                status = 'Seeding'
+            elif torrent_data['status'] == 16:
+                status = 'Paused'
+            else:
+                status = 'Unknown'
+            
+            if torrent_data['percentDone']*100 == 100.0:
+                torrent_data['percentDone'] = 1
+        
+            torrents.append({
+                'id': str(torrent_data['id']),
+                'label': str(torrent_data['name']),
+                'status': status,
+                'size_total': self.format_filesize(torrent_data['totalSize']),
+                'size_downloaded': self.format_filesize(total_bytes_completed),
+                'size_uploaded': self.format_filesize(torrent_data['uploadedEver']),
+                'percent_done': (torrent_data['percentDone']*100),
+                'estimated_time': self.format_time(torrent_data['eta']),
+                'peers_connected': torrent_data['peersConnected'],
+                'peers_incoming': torrent_data['peersSendingToUs'],
+                'peers_outgoing': torrent_data['peersGettingFromUs'],
+                'rate_download': self.format_filesize(torrent_data['rateDownload']),
+                'rate_upload': self.format_filesize(torrent_data['rateUpload']),
+                'ratio': str(torrent_data['uploadRatio'])
+            })
+            
+        return torrents
+        
+        
+    def start_torrent(self, id=False):
+        print "Starting torrent"
+        if id:
+            print "Starting torrent with id: %s" % id
+            self.connection.torrentStart(torrents=id)
+        else:
+            print "Starting all torrents"
+            self.connection.torrentStart()
+        
+        
+    def stop_torrent(self, id=False):
+        if id:
+            self.connection.torrentStop(torrents=id)
+        else:
+            self.connection.torrentStop()
+        
+        
+    def delete_torrent(self, id, files=False):
+        if id:
+            self.connection.torrentRemove(torrents=id, files=files)
+        else:
+            self.connection.torrentRemove(files)
 

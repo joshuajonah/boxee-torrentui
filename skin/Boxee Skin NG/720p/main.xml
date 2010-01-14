@@ -23,11 +23,11 @@ if client:
                                             username=params['client_user'], 
                                             password=params['client_pass'])
     if not connection:
-        STATUS.SetLabel("Connection failed, launching configuration...")
+        STATUS.SetLabel("Connection failed, launching configuration.")
         WINDOW.PushState()
         APP.ActivateWindow(14003, params)
 else:
-    STATUS.SetLabel("None found, launching configuration...")
+    STATUS.SetLabel("No client found, launching configuration.")
     WINDOW.PushState()
     APP.ActivateWindow(14003, params)
 ]]></onload>

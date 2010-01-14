@@ -25,8 +25,7 @@ from urllib import quote
 
 #	date/timestamp [LEVEL] error message
 logging.basicConfig(datefmt='%d %b %Y %H:%M:%S',
-					format='%(asctime)s [%(levelname)s] %(message)s',
-					filename='log/uTorrent.log')
+					format='%(asctime)s [%(levelname)s] %(message)s')
 
 #	UTORRENT CONSTANTS
 #	modify these, fuck things up
